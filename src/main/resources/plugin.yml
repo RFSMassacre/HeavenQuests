@@ -1,0 +1,17 @@
+name: HeavenQuests
+version: '1.0-SNAPSHOT'
+main: com.github.rfsmassacre.heavenquests.HeavenQuests
+api-version: '1.21'
+authors: [ RFSMassacre ]
+depend:
+  - HeavenLibrary
+  - CoinsEngine
+commands:
+  quest:
+    usage: "/quest"
+    aliases:
+      - quests
+  questadmin:
+    usage: "/questadmin"
+    aliases:
+      - questsadmin
