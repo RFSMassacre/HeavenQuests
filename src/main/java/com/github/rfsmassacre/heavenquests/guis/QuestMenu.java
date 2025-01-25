@@ -40,6 +40,12 @@ public class QuestMenu extends Menu
             return;
         }
 
+        Currency currency = CoinsEngineAPI.getCurrency(config.getString("currency.reroll"));
+        if (currency == null)
+        {
+            return;
+        }
+
         for (Quest quest : Arrays.stream(Quest.Objective.values())
                 .map((objective) -> quester.getAvailableQuests().get(objective))
                 .filter(Objects::nonNull)
@@ -47,7 +53,7 @@ public class QuestMenu extends Menu
         {
             for (int x = 1; x <= 9; x++)
             {
-                QuestIcon icon = new QuestIcon(x, 2, quest);
+                QuestIcon icon = new QuestIcon(x, 2, quest, config.getInt("single-price"), currency);
                 if (!slotTaken(icon.getSlot()))
                 {
                     addIcon(icon);
@@ -56,25 +62,66 @@ public class QuestMenu extends Menu
             }
         }
 
-        Currency currency = CoinsEngineAPI.getCurrency(config.getString("currency.reroll"));
-        if (currency != null)
-        {
-            int price = config.getInt("reroll-price");
-            addIcon(new RerollIcon(5, 4, price, currency, quester.getTimeLeft()));
-        }
+        addIcon(new RerollIcon(5, 4, config.getInt("reroll-price"), currency, quester.getTimeLeft()));
     }
 
     private class QuestIcon extends Icon
     {
-        public QuestIcon(int x, int y, Quest quest)
+        private final Quest quest;
+        private final int price;
+        private final Currency currency;
+
+        public QuestIcon(int x, int y, Quest quest, int price, Currency currency)
         {
             super(x, y, 1, quest.isComplete(), quest.getIcon(), quest.getIconDisplayName(), quest.getLore());
+
+            this.quest = quest;
+            this.price = price;
+            this.currency = currency;
+            if (quest.isComplete())
+            {
+                List<String> lore = quest.getLore();
+                lore.addAll(List.of(
+                        "  &7Click to get a new quest for the day or wait  ",
+                        "  &7until it refreshes.  ",
+                        "",
+                        "  &4(&e" + LocaleData.formatTime(quest.getTimeLeft()) + " Left&4)",
+                        ""));
+                setLore(lore);
+            }
         }
 
         @Override
         public void onClick(Player player)
         {
-            //Do nothing
+            if (!quest.isComplete())
+            {
+                return;
+            }
+
+            Quester quester = Quester.getQuester(player.getUniqueId());
+            if (quester == null)
+            {
+                locale.sendLocale(player, "no-data");
+                return;
+            }
+
+            double balance = CoinsEngineAPI.getBalance(player, currency);
+            DecimalFormat format = new DecimalFormat("#,###.##");
+            if (balance < amount)
+            {
+                locale.sendLocale(player, "not-enough", "{price}", format.format(price) + " " +
+                        currency.getSymbol(), "{balance}", format.format(balance) + " " + currency.getSymbol());
+                return;
+            }
+
+            CoinsEngineAPI.removeBalance(player, currency, price);
+            balance = CoinsEngineAPI.getBalance(player, currency);
+            Quest newQuest = Quest.generateQuest(quest.getObjective());
+            quester.getAvailableQuests().put(newQuest.getObjective(), newQuest);
+            locale.sendLocale(player, "rerolled.single", "{old}", quest.getDisplayName(), "{new}",
+                    newQuest.getDisplayName(), "{price}", format.format(price) + " " + currency.getSymbol(),
+                    "{balance}", format.format(balance) + " " + currency.getSymbol());
         }
     }
 

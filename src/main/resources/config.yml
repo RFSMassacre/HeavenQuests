@@ -1,5 +1,11 @@
 # In hours
 daily-interval: 86400
+completed-interval: 43200
+
+title-duration:
+  fade-in: 10
+  stay: 100
+  fade-out: 10
 
 objectives:
   kill_animal:
@@ -13,11 +19,11 @@ objectives:
   break_block:
     min: 32
     max: 64
-    prize: 8.0
+    prize: 2.0
   enchant:
     min: 1
     max: 3
-    prize: 500.0
+    prize: 50.0
   fish:
     min: 10
     max: 20
@@ -27,27 +33,53 @@ objectives:
     max: 1
     prize: 500.0
   craft:
-    min: 6
-    max: 12
-    prize: 20.0
+    min: 32
+    max: 64
+    prize: 2.0
   smelt:
-    min: 6
-    max: 12
-    prize: 40.0
+    min: 32
+    max: 64
+    prize: 2.0
   cook:
     min: 32
     max: 64
     prize: 6.0
   tame:
     min: 16
-    max: 64
-    prize: 10.0
+    max: 32
+    prize: 4.0
   harvest:
     min: 64
     max: 128
     prize: 2.0
 
+multipliers:
+  materials:
+    ancient_debris: 6.0
+    netherite: 10.0
+    diamond: 8.0
+    iron: 5.0
+    gold: 4.0
+    leather: 2.0
+    lapis_lazuli: 3.0
+    wheat: 1.2
+    chorus_fruit: 1.5
+    carrot: 0.8
+  entities:
+    ender_dragon: 100.0
+    wither: 100.0
+    vindicator: 2.0
+    iron_golem: 5.0
+    ravager: 10.0
+    chicken: 0.5
+
+blacklist:
+  materials:
+    - glazed
+  entities: []
+
 reroll-price: 200
+single-price: 25
 
 currency:
   prize: silver

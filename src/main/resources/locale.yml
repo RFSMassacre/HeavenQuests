@@ -1,12 +1,22 @@
 prefix: "&d&lQuests &7&l|&r "
 
 no-data: "&cYour data could not be found!"
-success: "&aYou have completed &f{quest}&a! You were rewarded &f{prize} ꐘ&a!"
+success: "&aYou have completed &f{quest}&a! You were rewarded &f{prize}&a!"
 expired: "&7See the &dTaskmaster &7in your capital to see your new quests!"
 reloaded: "&aThe plugin has been reloaded!"
 player-not-found: "&f{player}&c was not found! Ensure the username is spelled correctly."
 not-enough: "&cYou need &f{price}&c but only have &f{balance}&c!"
+
+notify:
+  progress:
+    title: "&r"
+    subtitle: "&7{quest}"
+  complete:
+    title: "&eDaily Complete!"
+    subtitle: "&7You were rewarded &f{prize}&a!"
+
 rerolled:
   menu: "&aYou have rerolled your daily quest for &f{price}&a! Now you have &f{balance}&a."
+  single: "&aYou have rerolled &e{old}&a for &e{new}&a for &f{price}&a! Now you have &f{balance}&a."
   self: "&f{player}&a has rerolled their daily quests."
   target: "&eYour daily quests have been rerolled. &7See the &dTaskmaster &7in your capital to see your new quests!"

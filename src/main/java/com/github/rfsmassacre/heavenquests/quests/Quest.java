@@ -6,18 +6,22 @@ import com.github.rfsmassacre.heavenquests.HeavenQuests;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
 import lombok.Getter;
+import lombok.Setter;
 import net.kyori.adventure.key.Key;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Registry;
 import org.bukkit.block.Biome;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.*;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.recipe.CookingBookCategory;
 
 import java.security.SecureRandom;
 import java.text.DecimalFormat;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 @Getter
@@ -27,17 +31,21 @@ public class Quest
             EntityType.GIANT,
             EntityType.ZOMBIE_HORSE);
 
-    public static Map<Objective, Quest> generateQuests()
+    public static Quest generateQuest(Objective objective)
     {
         PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
+        int min = config.getInt("objectives." + objective.toString().toLowerCase() + ".min");
+        int max = config.getInt("objectives." + objective.toString().toLowerCase() + ".max");
+        return new Quest(objective, objective.getRandomData(), new SecureRandom().nextInt(min,
+                max + 1));
+    }
+
+    public static Map<Objective, Quest> generateQuests()
+    {
         Map<Objective, Quest> quests = new HashMap<>();
         for (Objective objective : Objective.values())
         {
-            int min = config.getInt("objectives." + objective.toString().toLowerCase() + ".min");
-            int max = config.getInt("objectives." + objective.toString().toLowerCase() + ".max");
-            Quest quest = new Quest(objective, objective.getRandomData(), new SecureRandom().nextInt(min,
-                    max + 1));
-            quests.put(objective, quest);
+            quests.put(objective, generateQuest(objective));
         }
 
         return quests;
@@ -228,6 +236,8 @@ public class Quest
     private final String data;
     private final int max;
     private int amount;
+    @Setter
+    private long timeCompleted;
 
     public Quest(Objective objective, Object data, int max)
     {;
@@ -236,7 +246,14 @@ public class Quest
         switch (data)
         {
             case Material material -> this.data = material.name();
-            case EntityType entityType -> this.data = entityType.name();
+            case EntityType entityType ->
+            {
+                this.data = entityType.name();
+                if (max > 1)
+                {
+                    max = Math.max(1, (int) Math.round(max / getMultiplier()));
+                }
+            }
             case CraftingRecipe recipe ->
             {
                 this.data = recipe.key().asString();
@@ -339,7 +356,8 @@ public class Quest
     public double getPrize()
     {
         PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
-        return config.getDouble("objectives." + objective.toString().toLowerCase() + ".prize") * max;
+        return config.getDouble("objectives." + objective.toString().toLowerCase() + ".prize") * max *
+                getMultiplier();
     }
 
     public String getDisplayName()
@@ -401,17 +419,17 @@ public class Quest
             case KILL_MONSTER ->
             {
                 displayName = LocaleData.capitalize(objective.toString().replace("_MONSTER", "")) +
-                        " " + (max - amount) + " " + LocaleData.capitalize(getData().toString());
+                        " " + (max - amount) + " " + LocaleData.capitalize(data);
             }
             case KILL_ANIMAL ->
             {
                 displayName = LocaleData.capitalize(objective.toString().replace("_ANIMAL", "")) +
-                        " " + (max - amount) + " " + LocaleData.capitalize(getData().toString());
+                        " " + (max - amount) + " " + LocaleData.capitalize(data);
             }
             case BREAK_BLOCK ->
             {
                 displayName = LocaleData.capitalize(objective.toString().replace("_BLOCK", "")) +
-                        " " + (max - amount) + " " + LocaleData.capitalize(getData().toString());
+                        " " + (max - amount) + " " + LocaleData.capitalize(data);
             }
             case SMELT, COOK ->
             {
@@ -431,7 +449,7 @@ public class Quest
             default ->
             {
                 displayName = LocaleData.capitalize(objective.toString()) + " " + (max - amount) + " " +
-                        LocaleData.capitalize(getData().toString());
+                        LocaleData.capitalize(data);
             }
         }
 
@@ -440,8 +458,7 @@ public class Quest
 
     public List<String> getLore()
     {
-        List<String> lore = new ArrayList<>();
-        lore.addAll(List.of("",
+        List<String> lore = new ArrayList<>(List.of("",
                 "  &aReward: &f" + new DecimalFormat("#,###.##").format(getPrize()) + " ꐘ  ",
                 ""));
         return LocaleData.formatLore(lore);
@@ -545,5 +562,57 @@ public class Quest
     public boolean isComplete()
     {
         return amount >= max;
+    }
+
+    private double getMultiplier()
+    {
+        String type = null;
+        switch (objective)
+        {
+            case KILL_ANIMAL, KILL_MONSTER, TAME, FISH -> type = "entities";
+            case BREAK_BLOCK, HARVEST, ENCHANT, CRAFT, SMELT, COOK -> type = "materials";
+        }
+
+        if (type == null)
+        {
+            return 1.0;
+        }
+
+        PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
+        ConfigurationSection section = config.getSection("multipliers." + type);
+        if (section != null)
+        {
+            for (String key : section.getKeys(false))
+            {
+                if (data.toLowerCase().contains(key.toLowerCase()))
+                {
+                    return section.getDouble(key);
+                }
+            }
+        }
+
+        return 1.0;
+    }
+
+    public long getLastCompleted(ChronoUnit unit)
+    {
+        return Instant.ofEpochMilli(timeCompleted).until(Instant.now(), unit);
+    }
+
+    public long getTimeLeft()
+    {
+        if (!isComplete())
+        {
+            return 0L;
+        }
+
+        PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
+        int interval = config.getInt("completed-interval");
+        return Math.max(0L, interval - getLastCompleted(ChronoUnit.SECONDS));
+    }
+
+    public boolean isExpired()
+    {
+        return getTimeLeft() <= 0L;
     }
 }

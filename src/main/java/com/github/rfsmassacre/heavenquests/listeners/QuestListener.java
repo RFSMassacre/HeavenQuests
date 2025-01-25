@@ -1,5 +1,6 @@
 package com.github.rfsmassacre.heavenquests.listeners;
 
+import com.github.rfsmassacre.heavenlibrary.paper.configs.PaperConfiguration;
 import com.github.rfsmassacre.heavenlibrary.paper.configs.PaperLocale;
 import com.github.rfsmassacre.heavenquests.HeavenQuests;
 import com.github.rfsmassacre.heavenquests.quests.Quest;
@@ -23,9 +24,13 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.recipe.CookingBookCategory;
+import su.nightexpress.coinsengine.api.CoinsEngineAPI;
+import su.nightexpress.coinsengine.api.currency.Currency;
 
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class QuestListener implements Listener
 {
@@ -63,11 +68,13 @@ public class QuestListener implements Listener
         }
     }
 
+    private final PaperConfiguration config;
     private final PaperLocale locale;
     private final Map<Block, FurnaceItem> furnaceItems;
 
     public QuestListener()
     {
+        this.config = HeavenQuests.getInstance().getConfiguration();
         this.locale = HeavenQuests.getInstance().getLocale();
         this.furnaceItems = new HashMap<>();
     }
@@ -87,14 +94,31 @@ public class QuestListener implements Listener
         }
 
         quest.addAmount(amount);
-        if (quest.isComplete())
+        int fadeIn = config.getInt("title-duration.fade-in");
+        int stay = config.getInt("title-duration.stay");
+        int fadeOut = config.getInt("title-duration.fade-out");
+        if (!quest.isComplete())
         {
-            Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "silver give " + player.getName() + " " +
-                    quest.getPrize());
-            locale.sendLocale(player, "success", "{quest}", quest.getDisplayName(), "{prize}",
-                    new DecimalFormat("#,###.##").format(quest.getPrize()));
-            player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
+            locale.sendTitleLocale(player, fadeIn, stay, fadeOut, "notify.progress.title",
+                    "notify.progress.subtitle", "{quest}", quest.getIconDisplayName());
+            return;
         }
+
+        quest.setTimeCompleted(System.currentTimeMillis());
+        Currency currency = CoinsEngineAPI.getCurrency(config.getString("currency.prize"));
+        if (currency == null)
+        {
+            return;
+        }
+
+        CoinsEngineAPI.addBalance(player, currency, quest.getPrize());
+        DecimalFormat format =  new DecimalFormat("#,###.##");
+        locale.sendTitleLocale(player, fadeIn, stay, fadeOut, "notify.complete.title",
+                "notify.complete.subtitle", "{prize}", format.format(quest.getPrize()) + " " +
+                        currency.getSymbol());
+        locale.sendLocale(player, "success", "{quest}", quest.getDisplayName(), "{prize}",
+                format.format(quest.getPrize()) + " " + currency.getSymbol());
+        player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
