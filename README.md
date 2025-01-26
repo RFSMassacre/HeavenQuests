@@ -1,5 +1,6 @@
-# HeavenQuests
-Auto-generate nine daily quests based on the Paper platform.
+![HeavenQuests](HeavenQuests.png)
+
+#### Auto-generate nine daily quests based on the Paper platform.
 
 # Installation
 ## Dependencies
