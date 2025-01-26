@@ -52,7 +52,7 @@
                 <version>1.4</version>
                 <executions>
                     <execution>
-                        <phase>validate</phase>
+                        <phase>package</phase>
                         <goals>
                             <goal>create</goal>
                         </goals>
