@@ -1,7 +1,6 @@
 ![HeavenQuests](HeavenQuests.png)
 
-#### Auto-generate nine daily quests based on the Paper platform.
-
+### Auto-generate nine daily quests based on the Paper platform.
 # Installation
 ## Dependencies
 Ensure that both of these plugins are installed with HeavenQuests for it to work.
