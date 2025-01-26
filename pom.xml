@@ -6,7 +6,7 @@
 
     <groupId>com.github.rfsmassacre</groupId>
     <artifactId>HeavenQuests</artifactId>
-    <version>1.0-SNAPSHOT-${buildNumber}</version>
+    <version>1.0-SNAPSHOT-${git.commit.id.abbrev}</version>
     <packaging>jar</packaging>
 
     <name>HeavenQuests</name>
@@ -15,11 +15,6 @@
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
-
-    <scm>
-        <developerConnection>scm:git:git@github.com:RFSMassacre/repo.git</developerConnection>
-        <url>https://github.com/RFSMassacre/${artifactId}</url>
-    </scm>
 
     <build>
         <defaultGoal>clean package</defaultGoal>
@@ -45,36 +40,43 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <outputFile>${project.build.directory}/${project.build.finalName}.jar</outputFile>
+                    <finalName>${project.artifactId}-${project.version}</finalName>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/MANIFEST.MF</exclude>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
             </plugin>
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>buildnumber-maven-plugin</artifactId>
-                <version>1.4</version>
+                <groupId>io.github.git-commit-id</groupId>
+                <artifactId>git-commit-id-maven-plugin</artifactId>
+                <version>5.0.1</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <id>get-the-git-infos</id>
                         <goals>
-                            <goal>create</goal>
+                            <goal>revision</goal>
                         </goals>
-                        <configuration>
-                            <doCheck>true</doCheck>
-                        </configuration>
+                        <phase>validate</phase>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                        </manifest>
-                        <manifestEntries>
-                            <Implementation-Build>${buildNumber}</Implementation-Build>
-                        </manifestEntries>
-                    </archive>
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <generateGitPropertiesFilename>${project.build.outputDirectory}/git.properties</generateGitPropertiesFilename>
+                    <includeOnlyProperties>
+                        <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+                    </includeOnlyProperties>
+                    <commitIdGenerationMode>full</commitIdGenerationMode>
                 </configuration>
             </plugin>
         </plugins>
