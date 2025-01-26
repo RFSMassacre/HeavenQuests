@@ -71,13 +71,13 @@ public class QuestMenu extends Menu
             if (page + 1 <= pages.size())
             {
                 QuestMenu nextMenu = new QuestMenu(page + 1);
-                addIcon(new PageIcon(9, 6, "&fNext Page", Material.ARROW, nextMenu));
+                addIcon(new PageIcon(9, 4, "&fNext Page", Material.ARROW, nextMenu));
             }
 
             if (page - 1 > 0)
             {
                 QuestMenu lastMenu = new QuestMenu(page - 1);
-                addIcon(new PageIcon(1, 6, "&fLast Page", Material.ARROW, lastMenu));
+                addIcon(new PageIcon(1, 4, "&fLast Page", Material.ARROW, lastMenu));
             }
         }
     }
