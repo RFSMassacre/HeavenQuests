@@ -18,19 +18,47 @@
 
     <profiles>
         <profile>
-            <id>dev</id>
+            <id>master</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>git.branch</name>
+                    <value>master</value>
+                </property>
             </activation>
             <properties>
                 <!--suppress UnresolvedMavenProperty -->
                 <profile.finalName>${project.artifactId}-${project.version}-${git.commit.id.abbrev}</profile.finalName>
+                <deploy.branch>master</deploy.branch>
+                <deploy.remote>origin</deploy.remote>
             </properties>
         </profile>
         <profile>
             <id>release</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+                <property>
+                    <name>git.branch</name>
+                    <value>release</value>
+                </property>
+            </activation>
             <properties>
                 <profile.finalName>${project.artifactId}-${project.version}</profile.finalName>
+                <deploy.branch>release</deploy.branch>
+                <deploy.remote>origin</deploy.remote>
+            </properties>
+        </profile>
+        <profile>
+            <id>snapshot</id>
+            <activation>
+                <property>
+                    <name>git.branch</name>
+                    <value>snapshot</value>
+                </property>
+            </activation>
+            <properties>
+                <profile.finalName>${project.artifactId}-${project.version}-SNAPSHOT</profile.finalName>
+                <deploy.branch>snapshot</deploy.branch>
+                <deploy.remote>origin</deploy.remote>
             </properties>
         </profile>
     </profiles>
@@ -68,6 +96,7 @@
                     <includeOnlyProperties>
                         <includeOnlyProperty>^git.build.(time|version)$</includeOnlyProperty>
                         <includeOnlyProperty>^git.commit.id.(abbrev|full)$</includeOnlyProperty>
+                        <includeOnlyProperty>^git.branch$</includeOnlyProperty>
                     </includeOnlyProperties>
                     <commitIdGenerationMode>full</commitIdGenerationMode>
                 </configuration>
