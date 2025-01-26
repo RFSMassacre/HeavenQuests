@@ -17,8 +17,8 @@
     </properties>
 
     <scm>
-        <developerConnection>scm:git:git@github.com:username/repo.git</developerConnection>
-        <url>https://github.com/username/repo</url>
+        <developerConnection>scm:git:git@github.com:RFSMassacre/repo.git</developerConnection>
+        <url>https://github.com/RFSMassacre/${artifactId}</url>
     </scm>
 
     <build>
