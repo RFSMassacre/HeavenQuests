@@ -22,7 +22,7 @@ public class TaskUtil extends PaperTaskUtil
      */
     public void startTimers()
     {
-        startTimerAsync(new AutoSaveTask(), 0L, 1200);
+        startTimerAsync(new AutoSaveTask(), 0L, 1200L);
         startTimerAsync(new QuestRefreshTask(), 0L, 20L);
     }
 }

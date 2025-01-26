@@ -8,6 +8,7 @@ import io.papermc.paper.registry.RegistryKey;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.key.Key;
+import net.kyori.adventure.key.Keyed;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -29,15 +30,17 @@ public class Quest
 {
     private static final Set<EntityType> IMPOSSIBLE_ENTITIES = Set.of(EntityType.ILLUSIONER,
             EntityType.GIANT,
-            EntityType.ZOMBIE_HORSE);
+            EntityType.ZOMBIE_HORSE,
+            EntityType.WITHER,
+            EntityType.ENDER_DRAGON,
+            EntityType.ELDER_GUARDIAN);
 
     public static Quest generateQuest(Objective objective)
     {
         PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
         int min = config.getInt("objectives." + objective.toString().toLowerCase() + ".min");
         int max = config.getInt("objectives." + objective.toString().toLowerCase() + ".max");
-        return new Quest(objective, objective.getRandomData(), new SecureRandom().nextInt(min,
-                max + 1));
+        return new Quest(objective, new SecureRandom().nextInt(min, max + 1));
     }
 
     public static Map<Objective, Quest> generateQuests()
@@ -49,6 +52,37 @@ public class Quest
         }
 
         return quests;
+    }
+
+    private static double getMultiplier(Objective objective, String data)
+    {
+        String type = null;
+        switch (objective)
+        {
+            case KILL_ANIMAL, KILL_MONSTER, TAME, FISH -> type = "entities";
+            case BREAK_BLOCK, HARVEST, ENCHANT, CRAFT, SMELT, COOK -> type = "materials";
+        }
+
+        if (type == null)
+        {
+            return 1.0;
+        }
+
+        PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
+        ConfigurationSection section = config.getSection("multipliers." + type);
+        double multiplier = 1.0;
+        if (section != null)
+        {
+            for (String key : section.getKeys(false))
+            {
+                if (data.toLowerCase().contains(key.toLowerCase()))
+                {
+                    multiplier *= section.getDouble(key);
+                }
+            }
+        }
+
+        return multiplier;
     }
 
     @Getter
@@ -131,7 +165,8 @@ public class Quest
         COOK(getCookingRecipes()),
         TAME(Arrays.stream(EntityType.values())
                 .filter((entityType) -> entityType.getEntityClass() != null &&
-                        Tameable.class.isAssignableFrom(entityType.getEntityClass()))
+                        Tameable.class.isAssignableFrom(entityType.getEntityClass()) &&
+                        !IMPOSSIBLE_ENTITIES.contains(entityType))
                 .toArray()),
         HARVEST(List.of(Material.WHEAT,
                 Material.CARROTS,
@@ -162,7 +197,100 @@ public class Quest
 
         public Object getRandomData()
         {
-            return datas.get(new SecureRandom().nextInt(0, datas.size()));
+            Map<Object, Double> weights = new HashMap<>();
+            double totalWeight = 0.0;
+            for (Object data : datas)
+            {
+                if (!isValid(data))
+                {
+                    continue;
+                }
+
+                double weight;
+                if (data instanceof Keyed keyed)
+                {
+                    weight = 1.0 / Math.max(1.0, getMultiplier(this, keyed.key().asString()));
+                }
+                else
+                {
+                    weight = 1.0 / Math.max(1.0, getMultiplier(this, data.toString()));
+                }
+
+                weights.put(data, weight);
+                totalWeight += weight;
+            }
+
+            double random = new SecureRandom().nextDouble(totalWeight);
+            double cumulativeWeight = 0.0;
+            for (Map.Entry<Object, Double> entry : weights.entrySet())
+            {
+                cumulativeWeight += entry.getValue();
+                if (random <= cumulativeWeight)
+                {
+                    return entry.getKey();
+                }
+            }
+
+            return null;
+        }
+
+        private boolean isValid(Object data)
+        {
+            PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
+            switch (data)
+            {
+                case Material material ->
+                {
+                    List<String> blackListedMaterials = config.getStringList("blacklist.materials");
+                    for (String materialName : blackListedMaterials)
+                    {
+                        if (material.toString().contains(materialName.toUpperCase()))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                case EntityType entityType ->
+                {
+                    List<String> blackListedEntities = config.getStringList("blacklist.entities");
+                    for (String entityName : blackListedEntities)
+                    {
+                        if (entityType.toString().contains(entityName.toUpperCase()))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                case CraftingRecipe recipe ->
+                {
+                    List<String> blackListedMaterials = config.getStringList("blacklist.materials");
+                    for (String materialName : blackListedMaterials)
+                    {
+                        if (recipe.getResult().getType().toString().contains(materialName.toUpperCase()))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                case CookingRecipe<?> recipe ->
+                {
+                    List<String> blackListedMaterials = config.getStringList("blacklist.materials");
+                    for (String materialName : blackListedMaterials)
+                    {
+                        if (recipe.getInputChoice().getItemStack().getType().toString()
+                                .contains(materialName.toUpperCase()))
+                        {
+                            return false;
+                        }
+                    }
+                }
+                default ->
+                {
+                    //Do nothing.
+                }
+            }
+
+            return true;
         }
 
         public static List<Object> getNaturalBlocks()
@@ -234,16 +362,17 @@ public class Quest
 
     private final Objective objective;
     private final String data;
-    private final int max;
+    private int max;
     private int amount;
     @Setter
     private long timeCompleted;
 
-    public Quest(Objective objective, Object data, int max)
-    {;
+    public Quest(Objective objective, int max)
+    {
         this.objective = objective;
         this.amount = 0;
-        switch (data)
+        this.max = max;
+        switch (objective.getRandomData())
         {
             case Material material -> this.data = material.name();
             case EntityType entityType ->
@@ -251,20 +380,18 @@ public class Quest
                 this.data = entityType.name();
                 if (max > 1)
                 {
-                    max = Math.max(1, (int) Math.round(max / getMultiplier()));
+                    this.max = Math.max(1, (int) Math.round(this.max / getMultiplier()));
                 }
             }
             case CraftingRecipe recipe ->
             {
                 this.data = recipe.key().asString();
-                max *= recipe.getResult().getAmount();
+                this.max *= recipe.getResult().getAmount();
             }
             case CookingRecipe<?> recipe -> this.data = recipe.key().asString();
             case Biome biome -> this.data = biome.key().asString();
-            default -> this.data = null;
+            case null, default -> this.data = null;
         }
-
-        this.max = max;
     }
 
     public boolean isData(String data)
@@ -403,7 +530,7 @@ public class Quest
             }
         }
 
-        return LocaleData.format("&f" + displayName);
+        return LocaleData.format(displayName);
     }
 
     public String getIconDisplayName()
@@ -453,13 +580,13 @@ public class Quest
             }
         }
 
-        return LocaleData.format("&f" + displayName);
+        return LocaleData.format(displayName);
     }
 
     public List<String> getLore()
     {
         List<String> lore = new ArrayList<>(List.of("",
-                "  &aReward: &f" + new DecimalFormat("#,###.##").format(getPrize()) + " ꐘ  ",
+                "  &aReward: &2(&f" + new DecimalFormat("#,###.##").format(getPrize()) + " ꐘ&2)",
                 ""));
         return LocaleData.formatLore(lore);
     }
@@ -566,32 +693,7 @@ public class Quest
 
     private double getMultiplier()
     {
-        String type = null;
-        switch (objective)
-        {
-            case KILL_ANIMAL, KILL_MONSTER, TAME, FISH -> type = "entities";
-            case BREAK_BLOCK, HARVEST, ENCHANT, CRAFT, SMELT, COOK -> type = "materials";
-        }
-
-        if (type == null)
-        {
-            return 1.0;
-        }
-
-        PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
-        ConfigurationSection section = config.getSection("multipliers." + type);
-        if (section != null)
-        {
-            for (String key : section.getKeys(false))
-            {
-                if (data.toLowerCase().contains(key.toLowerCase()))
-                {
-                    return section.getDouble(key);
-                }
-            }
-        }
-
-        return 1.0;
+        return getMultiplier(objective, data);
     }
 
     public long getLastCompleted(ChronoUnit unit)

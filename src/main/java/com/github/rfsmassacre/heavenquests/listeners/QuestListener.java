@@ -79,46 +79,47 @@ public class QuestListener implements Listener
         this.furnaceItems = new HashMap<>();
     }
 
-    private void processQuest(Player player, Quest.Objective objective, int amount, String data)
+    private boolean processQuest(Player player, Quest.Objective objective, int amount, String data)
     {
+        Currency currency = CoinsEngineAPI.getCurrency(config.getString("currency.prize"));
+        if (currency == null)
+        {
+            return false;
+        }
+
         Quester quester = Quester.getQuester(player.getUniqueId());
         if (quester == null)
         {
-            return;
+            return false;
         }
 
         Quest quest = quester.getAvailableQuests().get(objective);
         if (quest == null || quest.isComplete() || !quest.isData(data))
         {
-            return;
+            return false;
         }
 
         quest.addAmount(amount);
-        int fadeIn = config.getInt("title-duration.fade-in");
-        int stay = config.getInt("title-duration.stay");
-        int fadeOut = config.getInt("title-duration.fade-out");
         if (!quest.isComplete())
         {
-            locale.sendTitleLocale(player, fadeIn, stay, fadeOut, "notify.progress.title",
-                    "notify.progress.subtitle", "{quest}", quest.getIconDisplayName());
-            return;
+            locale.sendActionLocale(player, false, "notify.progress.subtitle", "{quest}",
+                    "&7" + quest.getIconDisplayName());
+            return true;
         }
 
         quest.setTimeCompleted(System.currentTimeMillis());
-        Currency currency = CoinsEngineAPI.getCurrency(config.getString("currency.prize"));
-        if (currency == null)
-        {
-            return;
-        }
-
         CoinsEngineAPI.addBalance(player, currency, quest.getPrize());
         DecimalFormat format =  new DecimalFormat("#,###.##");
+        int fadeIn = config.getInt("title-duration.fade-in");
+        int stay = config.getInt("title-duration.stay");
+        int fadeOut = config.getInt("title-duration.fade-out");
         locale.sendTitleLocale(player, fadeIn, stay, fadeOut, "notify.complete.title",
                 "notify.complete.subtitle", "{prize}", format.format(quest.getPrize()) + " " +
                         currency.getSymbol());
         locale.sendLocale(player, "success", "{quest}", quest.getDisplayName(), "{prize}",
                 format.format(quest.getPrize()) + " " + currency.getSymbol());
         player.playSound(player, Sound.ENTITY_PLAYER_LEVELUP, 1.0F, 1.0F);
+        return true;
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -127,11 +128,17 @@ public class QuestListener implements Listener
         Block block = event.getBlock();
         if (block.getBlockData() instanceof Ageable ageable && ageable.getAge() >= ageable.getMaximumAge())
         {
-            processQuest(event.getPlayer(), Quest.Objective.HARVEST, 1, block.getType().toString());
+            if (processQuest(event.getPlayer(), Quest.Objective.HARVEST, 1, block.getType().toString()))
+            {
+                event.setDropItems(false);
+            }
         }
         else
         {
-            processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, 1, block.getType().toString());
+            if (processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, 1, block.getType().toString()))
+            {
+                event.setDropItems(false);
+            }
         }
     }
 
@@ -167,8 +174,17 @@ public class QuestListener implements Listener
     {
         if (event.getWhoClicked() instanceof Player player && event.getRecipe() instanceof CraftingRecipe recipe)
         {
-            processQuest(player, Quest.Objective.CRAFT, getAmount(event.getInventory()),
-                    recipe.getResult().getType().toString());
+            if (processQuest(player, Quest.Objective.CRAFT, getAmount(event.getInventory()),
+                    recipe.getResult().getType().toString()))
+            {
+
+                ItemStack item = recipe.getResult().clone();
+                item.setAmount(Math.max(0, item.getAmount() - getAmount(event.getInventory())));
+                if (item.getAmount() == 0)
+                {
+                    event.getInventory().removeItem(item);
+                }
+            }
         }
     }
 
@@ -285,13 +301,20 @@ public class QuestListener implements Listener
         {
             if (event.getRecipe().getCategory().equals(CookingBookCategory.FOOD))
             {
-                processQuest(player, Quest.Objective.COOK, 1, event.getRecipe().getInputChoice().getItemStack()
-                        .getType().toString());
+                if (processQuest(player, Quest.Objective.COOK, 1, event.getRecipe().getInputChoice().getItemStack()
+                        .getType().toString()))
+                {
+                    event.setResult(new ItemStack(Material.AIR));
+                }
+
             }
             else
             {
-                processQuest(player, Quest.Objective.SMELT, 1, event.getRecipe().getInputChoice().getItemStack()
-                        .getType().toString());
+                if (processQuest(player, Quest.Objective.SMELT, 1, event.getRecipe().getInputChoice().getItemStack()
+                        .getType().toString()))
+                {
+                    event.setResult(new ItemStack(Material.AIR));
+                }
             }
 
             FurnaceItem furnaceItem = furnaceItems.get(event.getBlock());
@@ -306,7 +329,10 @@ public class QuestListener implements Listener
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onItemEnchant(EnchantItemEvent event)
     {
-        processQuest(event.getEnchanter(), Quest.Objective.ENCHANT, 1, event.getItem().getType().toString());
+        if (processQuest(event.getEnchanter(), Quest.Objective.ENCHANT, 1, event.getItem().getType().toString()))
+        {
+            event.setItem(new ItemStack(Material.AIR));
+        }
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
@@ -327,11 +353,17 @@ public class QuestListener implements Listener
         {
             case Animals animal ->
             {
-                processQuest(player, Quest.Objective.KILL_ANIMAL, 1, animal.getType().toString());
+                if (processQuest(player, Quest.Objective.KILL_ANIMAL, 1, animal.getType().toString()))
+                {
+                    event.getDrops().clear();
+                }
             }
             case Monster monster ->
             {
-                processQuest(player, Quest.Objective.KILL_MONSTER, 1, monster.getType().toString());
+                if (processQuest(player, Quest.Objective.KILL_MONSTER, 1, monster.getType().toString()))
+                {
+                    event.getDrops().clear();
+                }
             }
             default ->
             {
@@ -346,7 +378,10 @@ public class QuestListener implements Listener
         Entity entity = event.getCaught();
         if (entity != null)
         {
-            processQuest(event.getPlayer(), Quest.Objective.FISH, 1, entity.getType().toString());
+            if (processQuest(event.getPlayer(), Quest.Objective.FISH, 1, entity.getType().toString()))
+            {
+                event.setCancelled(true);
+            }
         }
     }
 

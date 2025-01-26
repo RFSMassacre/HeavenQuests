@@ -73,7 +73,8 @@ public class QuestMenu extends Menu
 
         public QuestIcon(int x, int y, Quest quest, int price, Currency currency)
         {
-            super(x, y, 1, quest.isComplete(), quest.getIcon(), quest.getIconDisplayName(), quest.getLore());
+            super(x, y, 1, quest.isComplete(), quest.getIcon(), "&f" + quest.getIconDisplayName(),
+                    quest.getLore());
 
             this.quest = quest;
             this.price = price;
@@ -84,6 +85,8 @@ public class QuestMenu extends Menu
                 lore.addAll(List.of(
                         "  &7Click to get a new quest for the day or wait  ",
                         "  &7until it refreshes.  ",
+                        "",
+                        "  &eReroll Price: &6(&f" + price + " " + currency.getSymbol() + "&6)",
                         "",
                         "  &4(&e" + LocaleData.formatTime(quest.getTimeLeft()) + " Left&4)",
                         ""));

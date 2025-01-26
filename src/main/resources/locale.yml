@@ -1,5 +1,6 @@
 prefix: "&d&lQuests &7&l|&r "
 
+no-perm: "&cYou must be &2[&aAlpha&2] &cor higher to open your quests menu via this command. See the &dTaskmaster at your race's capital to view this."
 no-data: "&cYour data could not be found!"
 success: "&aYou have completed &f{quest}&a! You were rewarded &f{prize}&a!"
 expired: "&7See the &dTaskmaster &7in your capital to see your new quests!"
@@ -13,7 +14,7 @@ notify:
     subtitle: "&7{quest}"
   complete:
     title: "&eDaily Complete!"
-    subtitle: "&7You were rewarded &f{prize}&a!"
+    subtitle: "&7You were rewarded &f{prize}&7!"
 
 rerolled:
   menu: "&aYou have rerolled your daily quest for &f{price}&a! Now you have &f{balance}&a."

@@ -72,4 +72,12 @@ public class QuestCommand extends SimplePaperCommand
 
         return suggestions;
     }
+
+
+    @Override
+    public void onFail(CommandSender sender)
+    {
+        locale.sendLocale(sender, "no-perm");
+        playSound(sender, SoundKey.NO_PERM);
+    }
 }
