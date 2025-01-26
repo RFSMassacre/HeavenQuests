@@ -19,6 +19,9 @@
     <profiles>
         <profile>
             <id>dev</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <!--suppress UnresolvedMavenProperty -->
                 <profile.finalName>${project.artifactId}-${project.version}-${git.commit.id.abbrev}</profile.finalName>
