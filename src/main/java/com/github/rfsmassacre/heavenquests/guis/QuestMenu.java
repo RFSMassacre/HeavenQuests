@@ -5,9 +5,11 @@ import com.github.rfsmassacre.heavenlibrary.paper.configs.PaperConfiguration;
 import com.github.rfsmassacre.heavenlibrary.paper.configs.PaperLocale;
 import com.github.rfsmassacre.heavenlibrary.paper.menu.Icon;
 import com.github.rfsmassacre.heavenlibrary.paper.menu.Menu;
+import com.github.rfsmassacre.heavenlibrary.paper.menu.PageIcon;
 import com.github.rfsmassacre.heavenquests.HeavenQuests;
 import com.github.rfsmassacre.heavenquests.quests.Quest;
 import com.github.rfsmassacre.heavenquests.players.Quester;
+import com.google.common.collect.Lists;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import su.nightexpress.coinsengine.api.CoinsEngineAPI;
@@ -23,9 +25,9 @@ public class QuestMenu extends Menu
     private final PaperConfiguration config;
     private final PaperLocale locale;
 
-    public QuestMenu()
+    public QuestMenu(int page)
     {
-        super("&0Daily Quests", 4, 1);
+        super("&0Daily Quests", 4, page);
 
         this.config = HeavenQuests.getInstance().getConfiguration();
         this.locale = HeavenQuests.getInstance().getLocale();
@@ -46,10 +48,11 @@ public class QuestMenu extends Menu
             return;
         }
 
-        for (Quest quest : Arrays.stream(Quest.Objective.values())
+        List<List<Quest>> pages = Lists.partition(Arrays.stream(Quest.Objective.values())
                 .map((objective) -> quester.getAvailableQuests().get(objective))
                 .filter(Objects::nonNull)
-                .toList())
+                .toList(), 9);
+        for (Quest quest : pages.get(page - 1))
         {
             for (int x = 1; x <= 9; x++)
             {
@@ -63,6 +66,20 @@ public class QuestMenu extends Menu
         }
 
         addIcon(new RerollIcon(5, 4, config.getInt("reroll-price"), currency, quester.getTimeLeft()));
+        if (pages.size() > 1)
+        {
+            if (page + 1 <= pages.size())
+            {
+                QuestMenu nextMenu = new QuestMenu(page + 1);
+                addIcon(new PageIcon(9, 6, "&fNext Page", Material.ARROW, nextMenu));
+            }
+
+            if (page - 1 > 0)
+            {
+                QuestMenu lastMenu = new QuestMenu(page - 1);
+                addIcon(new PageIcon(1, 6, "&fLast Page", Material.ARROW, lastMenu));
+            }
+        }
     }
 
     private class QuestIcon extends Icon
