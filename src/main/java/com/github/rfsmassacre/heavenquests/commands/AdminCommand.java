@@ -201,7 +201,7 @@ public class AdminCommand extends PaperCommand
                     suggestions.addAll(objective.getDataString());
                 }
             }
-            else if (args.length == 4)
+            else if (args.length == 5)
             {
                 for (Player player : Bukkit.getOnlinePlayers())
                 {

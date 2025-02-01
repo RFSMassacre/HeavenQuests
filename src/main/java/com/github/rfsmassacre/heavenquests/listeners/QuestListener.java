@@ -11,7 +11,6 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -129,7 +128,7 @@ public class QuestListener implements Listener
     {
         Player player = event.getPlayer();
         Block block = event.getBlock();
-        if (processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, 1, block.getType().toString()))
+        if (processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, 1, block.getType().name()))
         {
             event.setDropItems(false);
         }
@@ -151,14 +150,14 @@ public class QuestListener implements Listener
             if (amount > 1)
             {
                 int difference = amount - 1;
-                if (processQuest(player, Quest.Objective.HARVEST, difference, material.toString()))
+                if (processQuest(player, Quest.Objective.HARVEST, difference, material.name()))
                 {
                     item.setAmount(1);
                 }
             }
             else if (amount == 1)
             {
-                if (processQuest(player, Quest.Objective.HARVEST, 1, material.toString()))
+                if (processQuest(player, Quest.Objective.HARVEST, 1, material.name()))
                 {
                     crops.remove(item);
                 }
@@ -183,7 +182,7 @@ public class QuestListener implements Listener
             if (amount > 1)
             {
                 int difference = amount - 1;
-                if (processQuest(player, Quest.Objective.HARVEST, difference, material.toString()))
+                if (processQuest(player, Quest.Objective.HARVEST, difference, material.name()))
                 {
                     item.getItemStack().setAmount(1);
                     harvestedBlocks.remove(player.getUniqueId());
@@ -191,7 +190,7 @@ public class QuestListener implements Listener
             }
             else if (amount == 1)
             {
-                if (processQuest(player, Quest.Objective.HARVEST, 1, material.toString()))
+                if (processQuest(player, Quest.Objective.HARVEST, 1, material.name()))
                 {
                     drops.remove(item);
                     harvestedBlocks.remove(player.getUniqueId());
@@ -203,7 +202,7 @@ public class QuestListener implements Listener
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockPlace(BlockPlaceEvent event)
     {
-        processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, -1, event.getBlock().getType().toString());
+        processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, -1, event.getBlock().getType().name());
     }
 
     private int getAmount(CraftingInventory inventory)
@@ -233,7 +232,7 @@ public class QuestListener implements Listener
         if (event.getWhoClicked() instanceof Player player && event.getRecipe() instanceof CraftingRecipe recipe)
         {
             if (processQuest(player, Quest.Objective.CRAFT, getAmount(event.getInventory()),
-                    recipe.getResult().getType().toString()))
+                    recipe.getResult().getType().name()))
             {
 
                 ItemStack item = recipe.getResult().clone();
@@ -270,12 +269,9 @@ public class QuestListener implements Listener
             {
                 item = event.getCursor();
             }
-            else if (furnaceItems.containsKey(block))
+            else
             {
                 furnaceItems.remove(block);
-                Bukkit.getLogger().info(player.getName() + " has removed " + event.getCurrentItem().getType() +
-                        "from a " + inventoryType + ". They have " + getActiveFurnaces(player.getUniqueId()) +
-                        "  active!");
             }
         }
         else if (event.getClickedInventory() instanceof PlayerInventory &&
@@ -360,7 +356,7 @@ public class QuestListener implements Listener
             if (event.getRecipe().getCategory().equals(CookingBookCategory.FOOD))
             {
                 if (processQuest(player, Quest.Objective.COOK, 1, event.getRecipe().getInputChoice().getItemStack()
-                        .getType().toString()))
+                        .getType().name()))
                 {
                     event.setResult(new ItemStack(Material.AIR));
                 }
@@ -369,7 +365,7 @@ public class QuestListener implements Listener
             else
             {
                 if (processQuest(player, Quest.Objective.SMELT, 1, event.getRecipe().getInputChoice().getItemStack()
-                        .getType().toString()))
+                        .getType().name()))
                 {
                     event.setResult(new ItemStack(Material.AIR));
                 }
@@ -387,7 +383,7 @@ public class QuestListener implements Listener
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onItemEnchant(EnchantItemEvent event)
     {
-        if (processQuest(event.getEnchanter(), Quest.Objective.ENCHANT, 1, event.getItem().getType().toString()))
+        if (processQuest(event.getEnchanter(), Quest.Objective.ENCHANT, 1, event.getItem().getType().name()))
         {
             event.setItem(new ItemStack(Material.AIR));
         }
@@ -411,14 +407,14 @@ public class QuestListener implements Listener
         {
             case Animals animal ->
             {
-                if (processQuest(player, Quest.Objective.KILL_ANIMAL, 1, animal.getType().toString()))
+                if (processQuest(player, Quest.Objective.KILL_ANIMAL, 1, animal.getType().name()))
                 {
                     event.getDrops().clear();
                 }
             }
             case Monster monster ->
             {
-                if (processQuest(player, Quest.Objective.KILL_MONSTER, 1, monster.getType().toString()))
+                if (processQuest(player, Quest.Objective.KILL_MONSTER, 1, monster.getType().name()))
                 {
                     event.getDrops().clear();
                 }
@@ -436,7 +432,7 @@ public class QuestListener implements Listener
         Entity entity = event.getCaught();
         if (entity != null)
         {
-            if (processQuest(event.getPlayer(), Quest.Objective.FISH, 1, entity.getType().toString()))
+            if (processQuest(event.getPlayer(), Quest.Objective.FISH, 1, entity.getType().name()))
             {
                 event.setCancelled(true);
             }
@@ -448,7 +444,7 @@ public class QuestListener implements Listener
     {
         if (event.getOwner() instanceof Player player)
         {
-            processQuest(player, Quest.Objective.TAME, 1, event.getEntityType().toString());
+            processQuest(player, Quest.Objective.TAME, 1, event.getEntityType().name());
         }
     }
 

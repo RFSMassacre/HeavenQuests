@@ -23,5 +23,5 @@ rerolled:
   target: "&eYour daily quests have been rerolled. &7See the &dTaskmaster &7in your capital to see your new quests!"
 
 set:
-  self: "&7You have set a new quest for &f{player}&7! &8(&e{quest}8)"
+  self: "&7You have set a new quest for &f{player}&7! &8(&e{quest}&8)"
   target: "&7You have a new quest! &8(&e{quest}&8)"
