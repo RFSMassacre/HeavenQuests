@@ -15,6 +15,7 @@ import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
@@ -28,9 +29,7 @@ import su.nightexpress.coinsengine.api.CoinsEngineAPI;
 import su.nightexpress.coinsengine.api.currency.Currency;
 
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class QuestListener implements Listener
 {
@@ -71,12 +70,14 @@ public class QuestListener implements Listener
     private final PaperConfiguration config;
     private final PaperLocale locale;
     private final Map<Block, FurnaceItem> furnaceItems;
+    private final Map<UUID, Block> harvestedBlocks;
 
     public QuestListener()
     {
         this.config = HeavenQuests.getInstance().getConfiguration();
         this.locale = HeavenQuests.getInstance().getLocale();
         this.furnaceItems = new HashMap<>();
+        this.harvestedBlocks = new HashMap<>();
     }
 
     private boolean processQuest(Player player, Quest.Objective objective, int amount, String data)
@@ -125,19 +126,30 @@ public class QuestListener implements Listener
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event)
     {
-        Block block = event.getBlock();
-        if (block.getBlockData() instanceof Ageable ageable && ageable.getAge() >= ageable.getMaximumAge())
+        if (processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, 1,
+                event.getBlock().getType().toString()))
         {
-            if (processQuest(event.getPlayer(), Quest.Objective.HARVEST, 1, block.getType().toString()))
-            {
-                event.setDropItems(false);
-            }
+            event.setDropItems(false);
         }
-        else
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onBlockDropItem(BlockDropItemEvent event)
+    {
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        if (!(block.getBlockData() instanceof Ageable ageable && ageable.getAge() >= ageable.getMaximumAge()))
         {
-            if (processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, 1, block.getType().toString()))
+            return;
+        }
+
+        List<Item> drops = event.getItems();
+        for (Item item : new ArrayList<>(drops))
+        {
+            Material material = item.getItemStack().getType();
+            if (processQuest(player, Quest.Objective.HARVEST, 1, material.toString()))
             {
-                event.setDropItems(false);
+                drops.removeIf((drop) -> drop.getItemStack().getType().equals(material));
             }
         }
     }
