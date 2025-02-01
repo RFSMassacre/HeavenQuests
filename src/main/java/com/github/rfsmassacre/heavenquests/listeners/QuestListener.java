@@ -101,19 +101,19 @@ public class QuestListener implements Listener
         }
 
         quest.addAmount(amount);
+        int fadeIn = config.getInt("title-duration.fade-in");
+        int stay = config.getInt("title-duration.stay");
+        int fadeOut = config.getInt("title-duration.fade-out");
         if (!quest.isComplete())
         {
-            locale.sendActionLocale(player, false, "notify.progress.subtitle", "{quest}",
-                    "&7" + quest.getIconDisplayName());
+            locale.sendTitleLocale(player, fadeIn, stay, fadeOut, "notify.progress.title",
+                    "notify.progress.subtitle", "{quest}", quest.getIconDisplayName());
             return true;
         }
 
         quest.setTimeCompleted(System.currentTimeMillis());
         CoinsEngineAPI.addBalance(player, currency, quest.getPrize());
         DecimalFormat format =  new DecimalFormat("#,###.##");
-        int fadeIn = config.getInt("title-duration.fade-in");
-        int stay = config.getInt("title-duration.stay");
-        int fadeOut = config.getInt("title-duration.fade-out");
         locale.sendTitleLocale(player, fadeIn, stay, fadeOut, "notify.complete.title",
                 "notify.complete.subtitle", "{prize}", format.format(quest.getPrize()) + " " +
                         currency.getSymbol());
@@ -126,10 +126,15 @@ public class QuestListener implements Listener
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event)
     {
-        if (processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, 1,
-                event.getBlock().getType().toString()))
+        Player player = event.getPlayer();
+        Block block = event.getBlock();
+        if (processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, 1, block.getType().toString()))
         {
             event.setDropItems(false);
+        }
+        else
+        {
+            harvestedBlocks.put(player.getUniqueId(), block);
         }
     }
 
@@ -137,8 +142,7 @@ public class QuestListener implements Listener
     public void onBlockDropItem(BlockDropItemEvent event)
     {
         Player player = event.getPlayer();
-        Block block = event.getBlock();
-        if (!(block.getBlockData() instanceof Ageable ageable && ageable.getAge() >= ageable.getMaximumAge()))
+        if (!event.getBlock().equals(harvestedBlocks.get(player.getUniqueId())))
         {
             return;
         }
@@ -147,9 +151,23 @@ public class QuestListener implements Listener
         for (Item item : new ArrayList<>(drops))
         {
             Material material = item.getItemStack().getType();
-            if (processQuest(player, Quest.Objective.HARVEST, 1, material.toString()))
+            int amount = item.getItemStack().getAmount();
+            if (amount > 1)
             {
-                drops.removeIf((drop) -> drop.getItemStack().getType().equals(material));
+                int difference = amount - 1;
+                if (processQuest(player, Quest.Objective.HARVEST, difference, material.toString()))
+                {
+                    item.getItemStack().setAmount(1);
+                    harvestedBlocks.remove(player.getUniqueId());
+                }
+            }
+            else if (amount == 1)
+            {
+                if (processQuest(player, Quest.Objective.HARVEST, 1, material.toString()))
+                {
+                    drops.remove(item);
+                    harvestedBlocks.remove(player.getUniqueId());
+                }
             }
         }
     }
