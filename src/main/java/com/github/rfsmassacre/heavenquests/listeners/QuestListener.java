@@ -22,6 +22,7 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.PlayerFishEvent;
+import org.bukkit.event.player.PlayerHarvestBlockEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.*;
 import org.bukkit.inventory.recipe.CookingBookCategory;
@@ -135,6 +136,33 @@ public class QuestListener implements Listener
         else
         {
             harvestedBlocks.put(player.getUniqueId(), block);
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    public void onPlayerHarvestBlock(PlayerHarvestBlockEvent event)
+    {
+        Player player = event.getPlayer();
+        List<ItemStack> crops = event.getItemsHarvested();
+        for (ItemStack item : new ArrayList<>(crops))
+        {
+            Material material = item.getType();
+            int amount = item.getAmount();
+            if (amount > 1)
+            {
+                int difference = amount - 1;
+                if (processQuest(player, Quest.Objective.HARVEST, difference, material.toString()))
+                {
+                    item.setAmount(1);
+                }
+            }
+            else if (amount == 1)
+            {
+                if (processQuest(player, Quest.Objective.HARVEST, 1, material.toString()))
+                {
+                    crops.remove(item);
+                }
+            }
         }
     }
 
