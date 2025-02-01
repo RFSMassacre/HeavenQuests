@@ -195,6 +195,24 @@ public class Quest
             this.datas = List.of(datas);
         }
 
+        public List<String> getDataString()
+        {
+            List<String> dataString = new ArrayList<>();
+            for (Object data : datas)
+            {
+                if (data instanceof Enum<?> enumeration)
+                {
+                    dataString.add(enumeration.name());
+                }
+                else if (data instanceof Keyed keyed)
+                {
+                    dataString.add(keyed.key().asString());
+                }
+            }
+
+            return dataString;
+        }
+
         public Object getRandomData()
         {
             Map<Object, Double> weights = new HashMap<>();
@@ -244,7 +262,7 @@ public class Quest
                     List<String> blackListedMaterials = config.getStringList("blacklist.materials");
                     for (String materialName : blackListedMaterials)
                     {
-                        if (material.toString().contains(materialName.toUpperCase()))
+                        if (material.name().contains(materialName.toUpperCase()))
                         {
                             return false;
                         }
@@ -255,7 +273,7 @@ public class Quest
                     List<String> blackListedEntities = config.getStringList("blacklist.entities");
                     for (String entityName : blackListedEntities)
                     {
-                        if (entityType.toString().contains(entityName.toUpperCase()))
+                        if (entityType.name().contains(entityName.toUpperCase()))
                         {
                             return false;
                         }
@@ -291,6 +309,18 @@ public class Quest
             }
 
             return true;
+        }
+
+        public static Objective fromString(String name)
+        {
+            try
+            {
+                return Objective.valueOf(name.toUpperCase());
+            }
+            catch (IllegalArgumentException exception)
+            {
+                return null;
+            }
         }
 
         public static List<Object> getNaturalBlocks()
@@ -367,6 +397,14 @@ public class Quest
     @Setter
     private long timeCompleted;
 
+    public Quest(Objective objective, String data, int max)
+    {
+        this.objective = objective;
+        this.data = data;
+        this.amount = 0;
+        this.max = max;
+    }
+
     public Quest(Objective objective, int max)
     {
         this.objective = objective;
@@ -374,10 +412,10 @@ public class Quest
         this.max = max;
         switch (objective.getRandomData())
         {
-            case Material material -> this.data = material.name();
+            case Material material -> this.data = material.toString();
             case EntityType entityType ->
             {
-                this.data = entityType.name();
+                this.data = entityType.toString();
                 if (max > 1)
                 {
                     this.max = Math.max(1, (int) Math.round(this.max / getMultiplier()));

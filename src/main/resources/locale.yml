@@ -21,3 +21,7 @@ rerolled:
   single: "&aYou have rerolled &e{old}&a for &e{new}&a for &f{price}&a! Now you have &f{balance}&a."
   self: "&f{player}&a has rerolled their daily quests."
   target: "&eYour daily quests have been rerolled. &7See the &dTaskmaster &7in your capital to see your new quests!"
+
+set:
+  self: "&7You have set a new quest for &f{player}&7! &8(&e{quest}8)"
+  target: "&7You have a new quest! &8(&e{quest}&8)"
