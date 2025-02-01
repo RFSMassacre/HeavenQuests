@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.Ageable;
 import org.bukkit.entity.*;
 import org.bukkit.event.*;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -134,7 +135,14 @@ public class QuestListener implements Listener
         }
         else
         {
-            harvestedBlocks.put(player.getUniqueId(), block);
+            if (block.getBlockData() instanceof Ageable ageable && ageable.getAge() >= ageable.getMaximumAge())
+            {
+                harvestedBlocks.put(player.getUniqueId(), block);
+            }
+            else if (!(block.getBlockData() instanceof Ageable))
+            {
+                harvestedBlocks.put(player.getUniqueId(), block);
+            }
         }
     }
 
@@ -202,7 +210,10 @@ public class QuestListener implements Listener
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockPlace(BlockPlaceEvent event)
     {
-        processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, -1, event.getBlock().getType().name());
+        if (!processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, -1, event.getBlock().getType().name()))
+        {
+            processQuest(event.getPlayer(), Quest.Objective.HARVEST, -1, event.getBlock().getType().name());
+        }
     }
 
     private int getAmount(CraftingInventory inventory)
