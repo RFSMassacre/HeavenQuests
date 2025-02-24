@@ -53,7 +53,7 @@ Resets all of that player's daily quests.
 # Configurations
 - **config.yml**
 ```YAML
-# In hours
+# In seconds.
 daily-interval: 86400
 completed-interval: 43200
 
@@ -65,25 +65,25 @@ title-duration:
 
 objectives:
   kill_animal:
-    min: 32
-    max: 64
-    prize: 15.0
+    min: 10
+    max: 15
+    prize: 45.0
   kill_monster:
-    min: 32
-    max: 64
-    prize: 30.0
+    min: 16
+    max: 32
+    prize: 60.0
   break_block:
     min: 32
     max: 64
-    prize: 3.0
+    prize: 16.0
   enchant:
-    min: 1
-    max: 3
-    prize: 5.0
+    min: 3
+    max: 9
+    prize: 40.0
   fish:
-    min: 10
-    max: 20
-    prize: 30.0
+    min: 6
+    max: 10
+    prize: 100.0
   visit_biome:
     min: 1
     max: 1
@@ -91,29 +91,29 @@ objectives:
   craft:
     min: 16
     max: 32
-    prize: 3.0
+    prize: 10.0
   smelt:
     min: 32
     max: 64
-    prize: 3.0
+    prize: 10.0
   cook:
     min: 32
     max: 64
-    prize: 8.0
+    prize: 16.0
   tame:
-    min: 16
-    max: 32
-    prize: 5.0
+    min: 10
+    max: 30
+    prize: 20.0
   harvest:
     min: 64
     max: 128
-    prize: 3.0
+    prize: 10.0
 
 multipliers:
   materials:
     ancient_debris: 6.0
-    netherite: 104.0
-    diamond: 13.0
+    netherite: 52.0
+    diamond: 7.0
     iron: 3.0
     gold: 5.0
     leather: 3.0
@@ -128,6 +128,11 @@ multipliers:
     leggings: 7.0
     boots: 4.0
     book: 3.0
+    trident: 208.0
+    elytra: 220.0
+    quartz: 1.5
+    chainmail: 4.0
+    shulker_box: 50.0
   entities:
     vindicator: 2.0
     iron_golem: 5.0
@@ -140,10 +145,47 @@ blacklist:
     - glazed
     - anvil
     - template
+    - bedrock
+    - stripped
+    - barrier
+    - structure
+    - jigsaw
+    - spawner
+    - end_portal
+    - dragon_egg
+    - command_block
+    - petrified
   entities:
     - elder_guardian
     - ender_dragon
     - wither
+    - warden
+    - parrot
+    - skeleton_horse
+    - zombie_horse
+  custom-fishing:
+    - book
+    - stick
+    - rod
+    - diamond
+    - fishfinder
+    - flint
+    - kelp
+    - nether_brick
+    - obsidian
+    - shoes
+    - stone
+    - water_effect
+    - lava_effect
+    - bait
+    - vanilla
+    - seagrass
+    - gold_ingot
+    - gold_nugget
+    - golden_star
+    - silver_star
+    - netherrack
+    - hook
 
 reroll-price: 200
 single-price: 25
