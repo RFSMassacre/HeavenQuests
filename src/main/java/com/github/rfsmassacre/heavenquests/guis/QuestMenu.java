@@ -10,8 +10,10 @@ import com.github.rfsmassacre.heavenquests.HeavenQuests;
 import com.github.rfsmassacre.heavenquests.quests.Quest;
 import com.github.rfsmassacre.heavenquests.players.Quester;
 import com.google.common.collect.Lists;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import su.nightexpress.coinsengine.api.CoinsEngineAPI;
 import su.nightexpress.coinsengine.api.currency.Currency;
 
@@ -90,8 +92,8 @@ public class QuestMenu extends Menu
 
         public QuestIcon(int x, int y, Quest quest, int price, Currency currency)
         {
-            super(x, y, 1, quest.isComplete(), quest.getIcon(), "&f" + quest.getIconDisplayName(),
-                    quest.getLore());
+            super(x, y, 1, getCustomModelData(quest), quest.isComplete(), quest.getIcon().getType(),
+                    "&f" + quest.getIconDisplayName(), quest.getLore());
 
             this.quest = quest;
             this.price = price;
@@ -109,6 +111,17 @@ public class QuestMenu extends Menu
                         ""));
                 setLore(lore);
             }
+        }
+
+        private static int getCustomModelData(Quest quest)
+        {
+            ItemStack icon = quest.getIcon();
+            if (icon != null && icon.hasItemMeta() && icon.getItemMeta().hasCustomModelData())
+            {
+                return icon.getItemMeta().getCustomModelData();
+            }
+
+            return 0;
         }
 
         @Override

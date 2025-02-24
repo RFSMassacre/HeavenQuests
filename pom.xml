@@ -6,7 +6,7 @@
 
     <groupId>com.github.rfsmassacre</groupId>
     <artifactId>HeavenQuests</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.3</version>
     <packaging>jar</packaging>
 
     <name>HeavenQuests</name>
@@ -175,6 +175,10 @@
             <name>NightExpress's Repository</name>
             <url>https://repo.nightexpressdev.com/releases</url>
         </repository>
+        <repository>
+            <id>momirealms</id>
+            <url>https://repo.momirealms.net/releases</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -199,6 +203,12 @@
         <dependency>
             <groupId>su.nightexpress.coinsengine</groupId>
             <artifactId>CoinsEngine</artifactId>
+            <version>LATEST</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.momirealms</groupId>
+            <artifactId>custom-fishing</artifactId>
             <version>LATEST</version>
             <scope>provided</scope>
         </dependency>

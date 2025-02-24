@@ -90,10 +90,31 @@ blacklist:
     - glazed
     - anvil
     - template
+    - stripped
   entities:
     - elder_guardian
     - ender_dragon
     - wither
+  custom-fishing:
+    - book
+    - stick
+    - rod
+    - diamond
+    - fishfinder
+    - flint
+    - kelp
+    - nether_brick
+    - obsidian
+    - shoes
+    - stone
+    - water_effect
+    - lava_effect
+    - bait
+    - vanilla
+    - seagrass
+    - gold_ingot
+    - golden_star
+    - silver_star
 
 reroll-price: 200
 single-price: 25

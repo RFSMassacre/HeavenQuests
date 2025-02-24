@@ -13,6 +13,7 @@ public class QuestRefreshTask extends BukkitRunnable
     {
         for (Quester quester : Quester.getQuesters())
         {
+            quester.refreshCompletedQuests();
             if (quester.isExpired())
             {
                 quester.refreshAvailableQuests();

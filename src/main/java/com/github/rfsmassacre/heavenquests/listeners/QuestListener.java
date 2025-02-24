@@ -68,21 +68,19 @@ public class QuestListener implements Listener
         }
     }
 
-    private final PaperConfiguration config;
-    private final PaperLocale locale;
     private final Map<Block, FurnaceItem> furnaceItems;
     private final Map<UUID, Block> harvestedBlocks;
 
     public QuestListener()
     {
-        this.config = HeavenQuests.getInstance().getConfiguration();
-        this.locale = HeavenQuests.getInstance().getLocale();
         this.furnaceItems = new HashMap<>();
         this.harvestedBlocks = new HashMap<>();
     }
 
-    private boolean processQuest(Player player, Quest.Objective objective, int amount, String data)
+    public static boolean processQuest(Player player, Quest.Objective objective, int amount, String data)
     {
+        PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
+        PaperLocale locale = HeavenQuests.getInstance().getLocale();
         Currency currency = CoinsEngineAPI.getCurrency(config.getString("currency.prize"));
         if (currency == null)
         {
@@ -212,7 +210,10 @@ public class QuestListener implements Listener
     {
         if (!processQuest(event.getPlayer(), Quest.Objective.BREAK_BLOCK, -1, event.getBlock().getType().name()))
         {
-            processQuest(event.getPlayer(), Quest.Objective.HARVEST, -1, event.getBlock().getType().name());
+            if (!(event.getBlock().getBlockData() instanceof Ageable))
+            {
+                processQuest(event.getPlayer(), Quest.Objective.HARVEST, -1, event.getBlock().getType().name());
+            }
         }
     }
 

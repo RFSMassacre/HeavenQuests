@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.key.Keyed;
+import net.momirealms.customfishing.api.BukkitCustomFishingPlugin;
+import net.momirealms.customfishing.api.mechanic.context.Context;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -155,10 +157,7 @@ public class Quest
                 Material.ELYTRA,
                 Material.BOOK
         )),
-        FISH(List.of(EntityType.COD,
-                EntityType.SALMON,
-                EntityType.PUFFERFISH,
-                EntityType.TROPICAL_FISH)),
+        FISH(getFish()),
         VISIT_BIOME(Registry.BIOME.stream().toArray()),
         CRAFT(getCraftingRecipes()),
         SMELT(getSmeltingRecipes()),
@@ -168,7 +167,7 @@ public class Quest
                         Tameable.class.isAssignableFrom(entityType.getEntityClass()) &&
                         !IMPOSSIBLE_ENTITIES.contains(entityType))
                 .toArray()),
-        HARVEST(List.of(Material.WHEAT,
+        HARVEST(new ArrayList<>(List.of(Material.WHEAT,
                 Material.CARROT,
                 Material.POTATO,
                 Material.BEETROOT,
@@ -181,18 +180,18 @@ public class Quest
                 Material.BAMBOO,
                 Material.KELP,
                 Material.SWEET_BERRIES,
-                Material.CHORUS_PLANT));
+                Material.CHORUS_PLANT)));
 
         private final List<Object> datas;
 
         Objective(List<Object> datas)
         {
-            this.datas = datas;
+            this.datas = new ArrayList<>(datas);
         }
 
         Objective(Object[] datas)
         {
-            this.datas = List.of(datas);
+            this(List.of(datas));
         }
 
         public List<String> getDataString()
@@ -207,6 +206,10 @@ public class Quest
                 else if (data instanceof Keyed keyed)
                 {
                     dataString.add(keyed.key().asString());
+                }
+                else
+                {
+                    dataString.add(data.toString());
                 }
             }
 
@@ -238,7 +241,7 @@ public class Quest
                 totalWeight += weight;
             }
 
-            double random = new SecureRandom().nextDouble(totalWeight);
+            double random = totalWeight <= 0.0 ? 0.0 : new SecureRandom().nextDouble(totalWeight);
             double cumulativeWeight = 0.0;
             for (Map.Entry<Object, Double> entry : weights.entrySet())
             {
@@ -304,7 +307,23 @@ public class Quest
                 }
                 default ->
                 {
-                    //Do nothing.
+                    if (Bukkit.getPluginManager().isPluginEnabled("CustomFishing") && this.equals(Objective.FISH))
+                    {
+                        List<String> blacklistedFish = config.getStringList("blacklist.custom-fishing");
+                        if (!BukkitCustomFishingPlugin.getInstance().getItemManager().getItemIDs()
+                                .contains(data.toString()))
+                        {
+                            return false;
+                        }
+
+                        for (String fish : blacklistedFish)
+                        {
+                            if (data.toString().toLowerCase().contains(fish.toLowerCase()))
+                            {
+                                return false;
+                            }
+                        }
+                    }
                 }
             }
 
@@ -388,6 +407,19 @@ public class Quest
 
             return recipes;
         }
+
+        private static List<Object> getFish()
+        {
+            if (!Bukkit.getPluginManager().isPluginEnabled("CustomFishing"))
+            {
+                return List.of(EntityType.COD,
+                        EntityType.SALMON,
+                        EntityType.PUFFERFISH,
+                        EntityType.TROPICAL_FISH);
+            }
+
+            return new ArrayList<>(BukkitCustomFishingPlugin.getInstance().getItemManager().getItemIDs());
+        }
     }
 
     private final Objective objective;
@@ -410,7 +442,8 @@ public class Quest
         this.objective = objective;
         this.amount = 0;
         this.max = max;
-        switch (objective.getRandomData())
+        Object randomData = objective.getRandomData();
+        switch (randomData)
         {
             case Material material -> this.data = material.toString();
             case EntityType entityType ->
@@ -428,7 +461,8 @@ public class Quest
             }
             case CookingRecipe<?> recipe -> this.data = recipe.key().asString();
             case Biome biome -> this.data = biome.key().asString();
-            case null, default -> this.data = null;
+            case null -> this.data = null;
+            default -> this.data = randomData.toString();
         }
     }
 
@@ -463,7 +497,26 @@ public class Quest
     {
         switch (objective)
         {
-            case KILL_ANIMAL, KILL_MONSTER, TAME, FISH ->
+            case FISH ->
+            {
+                if (Bukkit.getPluginManager().isPluginEnabled("CustomFishing"))
+                {
+                    return BukkitCustomFishingPlugin.getInstance().getItemManager().buildInternal(Context.player(null),
+                            data);
+                }
+                else
+                {
+                    try
+                    {
+                        return EntityType.valueOf(data);
+                    }
+                    catch (IllegalStateException exception)
+                    {
+                        //Do nothing
+                    }
+                }
+            }
+            case KILL_ANIMAL, KILL_MONSTER, TAME ->
             {
                 try
                 {
@@ -629,44 +682,64 @@ public class Quest
         return LocaleData.formatLore(lore);
     }
 
-    public Material getIcon()
+    public ItemStack getIcon()
     {
+        Material material = Material.BARRIER;
         switch (objective)
         {
+            case FISH ->
+            {
+                if (Bukkit.getPluginManager().isPluginEnabled("CustomFishing"))
+                {
+                    return BukkitCustomFishingPlugin.getInstance().getItemManager().buildInternal(Context.player(null),
+                            data);
+                }
+                else
+                {
+                    try
+                    {
+                        material = Material.valueOf(data);
+                    }
+                    catch (IllegalArgumentException exception)
+                    {
+                        //Do nothing.
+                    }
+                }
+            }
             case KILL_ANIMAL, KILL_MONSTER, TAME ->
             {
                 try
                 {
-                    return Material.valueOf(data + "_SPAWN_EGG");
+                    material = Material.valueOf(data + "_SPAWN_EGG");
                 }
                 catch (IllegalArgumentException exception)
                 {
-                    return Material.BARRIER;
+                    //Do nothing.
                 }
             }
-            case BREAK_BLOCK, FISH->
+            case BREAK_BLOCK ->
             {
                 try
                 {
-                    Material material = Material.valueOf(data);
-                    if (material.isItem())
+                    Material testMaterial = Material.valueOf(data);
+                    if (testMaterial.isItem())
                     {
-                        return material;
+                        material = testMaterial;
                     }
                 }
                 catch (IllegalArgumentException exception)
                 {
-                    return Material.BARRIER;
+                    //Do nothing;
                 }
             }
             case SMELT, COOK ->
             {
-                return ((CookingRecipe<?>) getData()).getInputChoice().getItemStack()
+                material = ((CookingRecipe<?>) getData()).getInputChoice().getItemStack()
                     .getType();
             }
             case CRAFT ->
             {
-                return ((CraftingRecipe) getData()).getResult().getType();
+                material = ((CraftingRecipe) getData()).getResult().getType();
             }
             case HARVEST ->
             {
@@ -676,42 +749,42 @@ public class Quest
                     {
                         case "POTATOES" ->
                         {
-                            return Material.POTATO;
+                            material = Material.POTATO;
                         }
                         case "CARROTS" ->
                         {
-                            return Material.CARROT;
+                            material = Material.CARROT;
                         }
                         case "BEETROOTS" ->
                         {
-                            return Material.BEETROOT;
+                            material = Material.BEETROOT;
                         }
                         default ->
                         {
-                            Material material = Material.valueOf(data);
-                            if (material.isItem())
+                            Material testMaterial = Material.valueOf(data);
+                            if (testMaterial.isItem())
                             {
-                                return material;
+                                material = testMaterial;
                             }
                         }
                     }
                 }
                 catch (IllegalArgumentException exception)
                 {
-                    return Material.BARRIER;
+                    //Do nothing.
                 }
             }
             case VISIT_BIOME ->
             {
-                return Material.GRASS_BLOCK;
+                material = Material.GRASS_BLOCK;
             }
             case ENCHANT ->
             {
-                return Material.ENCHANTED_BOOK;
+                material = Material.ENCHANTED_BOOK;
             }
         }
 
-        return Material.BARRIER;
+        return new ItemStack(material);
     }
 
     public void setAmount(int amount)

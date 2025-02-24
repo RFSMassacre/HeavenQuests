@@ -6,6 +6,8 @@ authors: [ RFSMassacre ]
 depend:
   - HeavenLibrary
   - CoinsEngine
+softdepend:
+  - CustomFishing
 commands:
   quest:
     usage: "/quest"

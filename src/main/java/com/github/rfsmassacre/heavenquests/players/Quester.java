@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -286,5 +287,20 @@ public class Quester
         availableQuests.clear();
         availableQuests.putAll(Quest.generateQuests());
         this.timeStamp = System.currentTimeMillis();
+    }
+
+    public void refreshCompletedQuests()
+    {
+        PaperConfiguration config = HeavenQuests.getInstance().getConfiguration();
+        for (Quest.Objective objective : Quest.Objective.values())
+        {
+            Quest quest = availableQuests.get(objective);
+            if (quest == null || (quest.isComplete() && quest.isExpired()))
+            {
+                int min = config.getInt("objectives." + objective.toString().toLowerCase() + ".min");
+                int max = config.getInt("objectives." + objective.toString().toLowerCase() + ".max");
+                availableQuests.put(objective, new Quest(objective, new SecureRandom().nextInt(min, max + 1)));
+            }
+        }
     }
 }
