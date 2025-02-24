@@ -367,8 +367,8 @@ public class QuestListener implements Listener
         {
             if (event.getRecipe().getCategory().equals(CookingBookCategory.FOOD))
             {
-                if (processQuest(player, Quest.Objective.COOK, 1, event.getRecipe().getInputChoice().getItemStack()
-                        .getType().name()))
+                if (processQuest(player, Quest.Objective.COOK, 1, event.getRecipe().getInputChoice()
+                        .getItemStack().getType().name()))
                 {
                     event.setResult(new ItemStack(Material.AIR));
                 }
@@ -376,8 +376,8 @@ public class QuestListener implements Listener
             }
             else
             {
-                if (processQuest(player, Quest.Objective.SMELT, 1, event.getRecipe().getInputChoice().getItemStack()
-                        .getType().name()))
+                if (processQuest(player, Quest.Objective.SMELT, 1, event.getRecipe().getInputChoice()
+                        .getItemStack().getType().name()))
                 {
                     event.setResult(new ItemStack(Material.AIR));
                 }
@@ -465,6 +465,6 @@ public class QuestListener implements Listener
     {
         Player player = event.getPlayer();
         Location to = event.getTo();
-        processQuest(player, Quest.Objective.VISIT_BIOME, 1, to.getBlock().getBiome().key().asString());
+        processQuest(player, Quest.Objective.VISIT_BIOME, 1, to.getBlock().getBiome().key().value());
     }
 }

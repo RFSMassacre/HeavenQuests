@@ -1,6 +1,6 @@
 ![HeavenQuests](HeavenQuests.png)
 
-### Auto-generate nine daily quests based on the Paper platform.
+### Auto-generate eleven daily quests based on the Paper platform.
 # Installation
 ## Dependencies
 Ensure that both of these plugins are installed with HeavenQuests for it to work.
@@ -79,7 +79,7 @@ objectives:
   enchant:
     min: 3
     max: 9
-    prize: 40.0
+    prize: 60.0
   fish:
     min: 6
     max: 10
@@ -101,9 +101,9 @@ objectives:
     max: 64
     prize: 16.0
   tame:
-    min: 10
-    max: 30
-    prize: 20.0
+    min: 8
+    max: 16
+    prize: 40.0
   harvest:
     min: 64
     max: 128
@@ -112,11 +112,9 @@ objectives:
 multipliers:
   materials:
     ancient_debris: 6.0
-    netherite: 52.0
     diamond: 7.0
     iron: 3.0
     gold: 5.0
-    leather: 3.0
     lapis_lazuli: 2.0
     wheat: 1.2
     chorus_fruit: 1.5
@@ -128,11 +126,8 @@ multipliers:
     leggings: 7.0
     boots: 4.0
     book: 3.0
-    trident: 208.0
-    elytra: 220.0
     quartz: 1.5
     chainmail: 4.0
-    shulker_box: 50.0
   entities:
     vindicator: 2.0
     iron_golem: 5.0
@@ -149,18 +144,84 @@ blacklist:
     - stripped
     - barrier
     - structure
-    - jigsaw
-    - spawner
-    - end_portal
-    - dragon_egg
+    - sign
+    - rail
+    - armor_stand
+    - button
+    - door
+    - pressure_plate
+    - glass_pane
+    - spawn_egg
+    - cartography_table
+    - netherite
+    - diamond
+    - clock
     - command_block
-    - petrified
+    - crafter
+    - stairs
+    - trapdoor
+    - crying_obsidian
+    - hoe
+    - sword
+    - axe
+    - leggings
+    - shovel
+    - disc
+    - elytra
+    - banner_pattern
+    - ghast_tear
+    - pickaxe
+    - hay_block
+    - hopper
+    - jukebox
+    - jigsaw
+    - knowledge_book
+    - lava
+    - lead
+    - shulker
+    - ominous_trial_key
+    - froglight
+    - rail
+    - armor_trim
+    - void_air
+    - vault
+    - wet_sponge
+    - bundle
+    - dried_kelp
+    - sniffer_egg
+    - cracked
   entities:
     - elder_guardian
     - ender_dragon
     - wither
     - warden
-    - parrot
+    - creaking
+    - breeze_wind_charge
+    - ominous_item_spawner
+    - breeze
+    - end_crystal
+    - evoker_fangs
+    - eye_of_ender
+    - giant
+    - interaction
+    - leash_knot
+    - llama_spit
+    - marker
+    - minecart
+    - player
+    - shulker_bullet
+    - stray
+    - wither_skull
+    - painting
+    - item
+    - fishing_bobber
+    - experience_orb
+    - area_effect_cloud
+    - glow_item_frame
+    - falling_block
+    - boat
+    - mule
+    - donkey
     - skeleton_horse
     - zombie_horse
   custom-fishing:
@@ -186,6 +247,11 @@ blacklist:
     - silver_star
     - netherrack
     - hook
+  biomes:
+    - advanced
+    - cave/
+    - minecraft
+    - nullscape
 
 reroll-price: 200
 single-price: 25
@@ -199,7 +265,7 @@ currency:
 ```YAML
 prefix: "&d&lQuests &7&l|&r "
 
-no-perm: "&cYou must be &2[&aAlpha&2] &cor higher to open your quests menu via this command. See the &dTaskmaster at your race's capital to view this."
+no-perm: "&cYou do not have permission for this command!"
 no-data: "&cYour data could not be found!"
 success: "&aYou have completed &f{quest}&a! You were rewarded &f{prize}&a!"
 expired: "&7See the &dTaskmaster &7in your capital to see your new quests!"
@@ -217,7 +283,11 @@ notify:
 
 rerolled:
   menu: "&aYou have rerolled your daily quest for &f{price}&a! Now you have &f{balance}&a."
-  single: "&aYou have rerolled &e{old}&a for &e{new}&a for &f{price}&a! Now you have &f{balance}&a."
+  single: "&aYou have rerolled &e{old}&a for &e{new}&a for &f{price}&a! Now you have
+    &f{balance}&a."
   self: "&f{player}&a has rerolled their daily quests."
-  target: "&eYour daily quests have been rerolled. &7See the &dTaskmaster &7in your capital to see your new quests!"
+  target: "&eYour daily quests have been rerolled."
+set:
+  self: "&7You have set a new quest for &f{player}&7! &8(&e{quest}&8)"
+  target: "&7You have a new quest! &8(&e{quest}&8)"
 ```

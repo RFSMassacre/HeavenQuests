@@ -14,12 +14,7 @@ import com.github.rfsmassacre.heavenquests.quests.Quest;
 import com.github.rfsmassacre.heavenquests.utils.TaskUtil;
 import lombok.Getter;
 import net.momirealms.customfishing.api.BukkitCustomFishingPlugin;
-import net.momirealms.customfishing.common.plugin.CustomFishingPlugin;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.PluginManager;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Getter
 public final class HeavenQuests extends HeavenPaperPlugin
@@ -46,9 +41,10 @@ public final class HeavenQuests extends HeavenPaperPlugin
             Quest.Objective.FISH.getDatas().clear();
             Quest.Objective.FISH.getDatas().addAll(BukkitCustomFishingPlugin.getInstance().getItemManager()
                     .getItemIDs());
-            for (Object data : Quest.Objective.FISH.getDatas())
+            for (String id : BukkitCustomFishingPlugin.getInstance().getItemManager()
+                    .getItemIDs())
             {
-                getLogger().info(data.toString());
+                getLogger().info(id);
             }
 
             plugins.registerEvents(new CustomFishingListener(), this);

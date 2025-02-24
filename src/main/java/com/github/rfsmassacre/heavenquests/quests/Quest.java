@@ -5,6 +5,7 @@ import com.github.rfsmassacre.heavenlibrary.paper.configs.PaperConfiguration;
 import com.github.rfsmassacre.heavenquests.HeavenQuests;
 import io.papermc.paper.registry.RegistryAccess;
 import io.papermc.paper.registry.RegistryKey;
+import io.papermc.paper.registry.keys.BiomeKeys;
 import lombok.Getter;
 import lombok.Setter;
 import net.kyori.adventure.key.Key;
@@ -158,7 +159,7 @@ public class Quest
                 Material.BOOK
         )),
         FISH(getFish()),
-        VISIT_BIOME(Registry.BIOME.stream().toArray()),
+        VISIT_BIOME(getBiomes()),
         CRAFT(getCraftingRecipes()),
         SMELT(getSmeltingRecipes()),
         COOK(getCookingRecipes()),
@@ -408,7 +409,7 @@ public class Quest
             return recipes;
         }
 
-        private static List<Object> getFish()
+        public static List<Object> getFish()
         {
             if (!Bukkit.getPluginManager().isPluginEnabled("CustomFishing"))
             {
@@ -418,7 +419,42 @@ public class Quest
                         EntityType.TROPICAL_FISH);
             }
 
-            return new ArrayList<>(BukkitCustomFishingPlugin.getInstance().getItemManager().getItemIDs());
+            List<String> blacklist = HeavenQuests.getInstance().getConfiguration()
+                    .getStringList("blacklist.custom-fishing");
+            return new ArrayList<>(BukkitCustomFishingPlugin.getInstance().getItemManager().getItemIDs().stream()
+                    .filter((id) ->
+                    {
+                        for (String blacklistedId : blacklist)
+                        {
+                            if (id.toLowerCase().contains(blacklistedId.toLowerCase()))
+                            {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    })
+                    .toList());
+        }
+
+        private static List<Object> getBiomes()
+        {
+            List<String> blacklist = HeavenQuests.getInstance().getConfiguration()
+                    .getStringList("blacklist.biomes");
+            return new ArrayList<>(Registry.BIOME.stream()
+                    .filter((biome) ->
+                    {
+                        for (String blacklistedBiome : blacklist)
+                        {
+                            if (biome.key().asString().toLowerCase().contains(blacklistedBiome.toLowerCase()))
+                            {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    })
+                    .toList());
         }
     }
 
@@ -470,16 +506,21 @@ public class Quest
     {
         try
         {
-            Material material = Material.valueOf(data);
             switch (objective)
             {
                 case CRAFT ->
                 {
+                    Material material = Material.valueOf(data);
                     return ((CraftingRecipe) getData()).getResult().getType().equals(material);
                 }
                 case SMELT, COOK ->
                 {
+                    Material material = Material.valueOf(data);
                     return ((CookingRecipe<?>) getData()).getInputChoice().getItemStack().getType().equals(material);
+                }
+                case VISIT_BIOME ->
+                {
+                    return this.data.contains(data);
                 }
                 default ->
                 {

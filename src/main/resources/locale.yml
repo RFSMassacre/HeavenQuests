@@ -1,6 +1,6 @@
 prefix: "&d&lQuests &7&l|&r "
 
-no-perm: "&cYou must be &2[&aAlpha&2] &cor higher to open your quests menu via this command. See the &dTaskmaster at your race's capital to view this."
+no-perm: "&cYou do not have permission for this command!"
 no-data: "&cYour data could not be found!"
 success: "&aYou have completed &f{quest}&a! You were rewarded &f{prize}&a!"
 expired: "&7See the &dTaskmaster &7in your capital to see your new quests!"
@@ -18,10 +18,10 @@ notify:
 
 rerolled:
   menu: "&aYou have rerolled your daily quest for &f{price}&a! Now you have &f{balance}&a."
-  single: "&aYou have rerolled &e{old}&a for &e{new}&a for &f{price}&a! Now you have &f{balance}&a."
+  single: "&aYou have rerolled &e{old}&a for &e{new}&a for &f{price}&a! Now you have
+    &f{balance}&a."
   self: "&f{player}&a has rerolled their daily quests."
-  target: "&eYour daily quests have been rerolled. &7See the &dTaskmaster &7in your capital to see your new quests!"
-
+  target: "&eYour daily quests have been rerolled."
 set:
   self: "&7You have set a new quest for &f{player}&7! &8(&e{quest}&8)"
   target: "&7You have a new quest! &8(&e{quest}&8)"
