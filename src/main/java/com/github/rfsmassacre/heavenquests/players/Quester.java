@@ -218,6 +218,8 @@ public class Quester
     private String displayName;
     @Setter
     private long timeStamp;
+    @Setter
+    private boolean active;
 
     public Quester()
     {
@@ -287,6 +289,7 @@ public class Quester
         availableQuests.clear();
         availableQuests.putAll(Quest.generateQuests());
         this.timeStamp = System.currentTimeMillis();
+        this.active = false;
     }
 
     public void refreshCompletedQuests()

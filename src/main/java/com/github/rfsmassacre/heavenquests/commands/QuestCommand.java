@@ -52,7 +52,7 @@ public class QuestCommand extends SimplePaperCommand
             return;
         }
 
-        Menu menu = new QuestMenu(1);
+        Menu menu = new QuestMenu(quester, 1);
         Menu.addView(player.getUniqueId(), menu);
         player.openInventory(menu.createInventory(player));
         playSound(player, SoundKey.SUCCESS);

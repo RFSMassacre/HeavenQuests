@@ -10,7 +10,6 @@ import com.github.rfsmassacre.heavenquests.HeavenQuests;
 import com.github.rfsmassacre.heavenquests.quests.Quest;
 import com.github.rfsmassacre.heavenquests.players.Quester;
 import com.google.common.collect.Lists;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -18,6 +17,7 @@ import su.nightexpress.coinsengine.api.CoinsEngineAPI;
 import su.nightexpress.coinsengine.api.currency.Currency;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -26,19 +26,20 @@ public class QuestMenu extends Menu
 {
     private final PaperConfiguration config;
     private final PaperLocale locale;
+    private final Quester quester;
 
-    public QuestMenu(int page)
+    public QuestMenu(Quester quester, int page)
     {
         super("&0Daily Quests", 4, page);
 
         this.config = HeavenQuests.getInstance().getConfiguration();
         this.locale = HeavenQuests.getInstance().getLocale();
+        this.quester = quester;
     }
 
     @Override
     public void updateIcons(Player player)
     {
-        Quester quester = Quester.getQuester(player.getUniqueId());
         if (quester == null)
         {
             return;
@@ -67,18 +68,19 @@ public class QuestMenu extends Menu
             }
         }
 
-        addIcon(new RerollIcon(5, 4, config.getInt("reroll-price"), currency, quester.getTimeLeft()));
+        addIcon(new RerollIcon(4, 4, config.getInt("reroll-price"), currency, quester.getTimeLeft()));
+        addIcon(new ActiveIcon(6, 4));
         if (pages.size() > 1)
         {
             if (page + 1 <= pages.size())
             {
-                QuestMenu nextMenu = new QuestMenu(page + 1);
+                QuestMenu nextMenu = new QuestMenu(quester, page + 1);
                 addIcon(new PageIcon(9, 4, "&fNext Page", Material.ARROW, nextMenu));
             }
 
             if (page - 1 > 0)
             {
-                QuestMenu lastMenu = new QuestMenu(page - 1);
+                QuestMenu lastMenu = new QuestMenu(quester, page - 1);
                 addIcon(new PageIcon(1, 4, "&fLast Page", Material.ARROW, lastMenu));
             }
         }
@@ -202,6 +204,21 @@ public class QuestMenu extends Menu
             quester.refreshAvailableQuests();
             locale.sendLocale(player, "rerolled.menu", "{price}", format.format(price) + " " +
                     currency.getSymbol(), "{balance}", format.format(balance) + " " + currency.getSymbol());
+        }
+    }
+
+    private class ActiveIcon extends Icon
+    {
+        public ActiveIcon(int x, int y)
+        {
+            super(x, y, 1, false, quester.isActive() ? Material.GREEN_WOOL : Material.RED_WOOL,
+                    quester.isActive() ? "&7Disable Quests" : "&eEnable Quests", new ArrayList<>());
+        }
+
+        @Override
+        public void onClick(Player player)
+        {
+            quester.setActive(!quester.isActive());
         }
     }
 }

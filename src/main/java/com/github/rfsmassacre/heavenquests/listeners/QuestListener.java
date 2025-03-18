@@ -88,7 +88,7 @@ public class QuestListener implements Listener
         }
 
         Quester quester = Quester.getQuester(player.getUniqueId());
-        if (quester == null)
+        if (quester == null || !quester.isActive())
         {
             return false;
         }
