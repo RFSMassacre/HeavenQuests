@@ -438,11 +438,11 @@ public class QuestListener implements Listener
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR)
     public void onPlayerFish(PlayerFishEvent event)
     {
         Entity entity = event.getCaught();
-        if (entity != null)
+        if (entity != null && event.getState().equals(PlayerFishEvent.State.CAUGHT_FISH))
         {
             if (processQuest(event.getPlayer(), Quest.Objective.FISH, 1, entity.getType().name()))
             {

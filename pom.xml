@@ -167,8 +167,9 @@
             <url>https://oss.sonatype.org/content/groups/public/</url>
         </repository>
         <repository>
-            <id>heavenreborn</id>
-            <url>https://maven.heavenreborn.com/snapshots</url>
+            <id>repsy</id>
+            <name>My Private Maven Repository on Repsy</name>
+            <url>https://repo.repsy.io/mvn/rfsmassacre/default</url>
         </repository>
         <repository>
             <id>nightexpress-releases</id>
@@ -191,25 +192,25 @@
         <dependency>
             <groupId>com.github.rfsmassacre</groupId>
             <artifactId>HeavenLibrary</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0.2-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <version>LATEST</version>
+            <version>1.18.38</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>su.nightexpress.coinsengine</groupId>
             <artifactId>CoinsEngine</artifactId>
-            <version>LATEST</version>
+            <version>2.4.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.momirealms</groupId>
             <artifactId>custom-fishing</artifactId>
-            <version>LATEST</version>
+            <version>2.3.7</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
