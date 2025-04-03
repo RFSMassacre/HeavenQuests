@@ -168,8 +168,8 @@
         </repository>
         <repository>
             <id>repsy</id>
-            <name>My Private Maven Repository on Repsy</name>
-            <url>https://repo.repsy.io/mvn/rfsmassacre/default</url>
+            <name>My Public Maven Repository on Repsy</name>
+            <url>https://repo.repsy.io/mvn/rfsmassacre/releases</url>
         </repository>
         <repository>
             <id>nightexpress-releases</id>
